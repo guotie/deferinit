@@ -32,7 +32,9 @@ func AddInit(f func(), fi func()) {
 	lock.Lock()
 	defer lock.Unlock()
 
-	fns = append(fns, f)
+	if f != nil {
+		fns = append(fns, f)
+	}
 	if fi != nil {
 		fis = append(fis, fi)
 	}
