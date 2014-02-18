@@ -17,7 +17,7 @@ defer init/fini of golang
 
 ## 1. deferinit.AddInit(f, fi func())
 
-参数为两个func()类型的函数，f为init函数，fi为fini函数，fi为可选，如果没有对应的fini函数，可以使用nil
+参数为两个func()类型的函数，f为init函数，fi为fini函数，f和fi可以为nil
 
 
 ## 2. deferinit.InitAll()
@@ -39,9 +39,7 @@ defer init/fini of golang
 		AddInit(func() {
 			fmt.Println("2")
 		}, nil)
-		AddInit(func() {
-			fmt.Println("3")
-		}, func() {
+		AddInit(nil, func() {
 			fmt.Println("-3")
 		})
 		AddInit(func() {
@@ -58,7 +56,6 @@ defer init/fini of golang
 
 	1
 	2
-	3
 	4
 	-4
 	-3
