@@ -10,9 +10,13 @@ type fn struct {
 	pos int
 }
 
+type gr func(chan struct{})
+
 var (
-	fns  = make([]fn, 0)
-	lock sync.Mutex
+	fns       = make([]fn, 0)
+	routines  = make([]gr, 0)
+	exitChans = make([]chan struct{}, 0)
+	lock      sync.Mutex
 )
 
 func InitAll() {
@@ -53,4 +57,25 @@ func AddInit(fi func(), ff func(), pos int) {
 		}
 	}
 	fns = append(fns[0:index], append([]fn{s}, fns[index:]...)...)
+}
+
+// routines
+
+func AddRoutine(f gr) {
+	routines = append(routines, f)
+}
+
+func RunRoutines() {
+	exitChans = make([]chan struct{}, len(routines))
+	for i, r := range routines {
+		exitChans[i] = make(chan struct{})
+		go r(exitChans[i])
+	}
+}
+
+func StopRoutines() {
+	for _, ch := range exitChans {
+		ch <- struct{}{}
+		_ = <-ch
+	}
 }
