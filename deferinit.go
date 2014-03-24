@@ -4,9 +4,14 @@ import (
 	"sync"
 )
 
+type fn struct {
+	fi  func() // init function
+	ff  func() // fini functions
+	pos int
+}
+
 var (
-	fns  []func() = make([]func(), 0)
-	fis  []func() = make([]func(), 0)
+	fns  = make([]fn, 0)
 	lock sync.Mutex
 )
 
@@ -15,7 +20,9 @@ func InitAll() {
 	defer lock.Unlock()
 
 	for _, f := range fns {
-		f()
+		if f.fi != nil {
+			f.fi()
+		}
 	}
 }
 
@@ -23,19 +30,27 @@ func FiniAll() {
 	lock.Lock()
 	defer lock.Unlock()
 
-	for i := len(fis) - 1; i >= 0; i-- {
-		fis[i]()
+	for i := len(fns) - 1; i >= 0; i-- {
+		if fns[i].ff != nil {
+			fns[i].ff()
+		}
 	}
 }
 
-func AddInit(f func(), fi func()) {
+func AddInit(fi func(), ff func(), pos int) {
 	lock.Lock()
 	defer lock.Unlock()
 
-	if f != nil {
-		fns = append(fns, f)
+	s := fn{fi, ff, pos}
+
+	var (
+		f     fn
+		index int
+	)
+	for index, f = range fns {
+		if f.pos < pos {
+			break
+		}
 	}
-	if fi != nil {
-		fis = append(fis, fi)
-	}
+	fns = append(fns[0:index], append([]fn{s}, fns[index:]...)...)
 }
