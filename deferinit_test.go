@@ -2,6 +2,7 @@ package deferinit
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 )
@@ -27,34 +28,34 @@ func TestDeferInit(t *testing.T) {
 }
 
 func TestRoutines(t *testing.T) {
-	AddRoutine(func(ch chan struct{}) {
+	AddRoutine(func(ch chan struct{}, wg *sync.WaitGroup) {
 		fmt.Println("routine 1 start")
 		select {
 		case <-ch:
 		}
 		fmt.Println("routine 1 exit")
-		ch <- struct{}{}
+		wg.Done()
 	})
 
-	AddRoutine(func(ch chan struct{}) {
+	AddRoutine(func(ch chan struct{}, wg *sync.WaitGroup) {
 		fmt.Println("routine 2 start")
 		select {
 		case <-ch:
 		}
 		fmt.Println("routine 2 exit")
-		ch <- struct{}{}
+		wg.Done()
 	})
 
-	AddRoutine(func(ch chan struct{}) {
+	AddRoutine(func(ch chan struct{}, wg *sync.WaitGroup) {
 		fmt.Println("routine 3 start")
 		select {
 		case <-ch:
 		}
 		fmt.Println("routine 3 exit")
-		ch <- struct{}{}
+		wg.Done()
 	})
 
 	RunRoutines()
-	time.Sleep(100)
+	time.Sleep(1000)
 	StopRoutines()
 }

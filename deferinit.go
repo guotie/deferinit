@@ -10,13 +10,14 @@ type fn struct {
 	pos int
 }
 
-type gr func(chan struct{})
+type gr func(chan struct{}, *sync.WaitGroup)
 
 var (
 	fns       = make([]fn, 0)
 	routines  = make([]gr, 0)
 	exitChans = make([]chan struct{}, 0)
 	lock      sync.Mutex
+	wg        sync.WaitGroup
 )
 
 func InitAll() {
@@ -69,13 +70,14 @@ func RunRoutines() {
 	exitChans = make([]chan struct{}, len(routines))
 	for i, r := range routines {
 		exitChans[i] = make(chan struct{})
-		go r(exitChans[i])
+		wg.Add(1)
+		go r(exitChans[i], &wg)
 	}
 }
 
 func StopRoutines() {
 	for _, ch := range exitChans {
 		ch <- struct{}{}
-		_ = <-ch
 	}
+	wg.Wait()
 }
