@@ -1,6 +1,7 @@
 package deferinit
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -13,6 +14,7 @@ type fn struct {
 type gr func(chan struct{}, *sync.WaitGroup)
 
 var (
+	_         = fmt.Printf
 	fns       = make([]fn, 0)
 	routines  = make([]gr, 0)
 	exitChans = make([]chan struct{}, 0)
@@ -43,20 +45,23 @@ func FiniAll() {
 }
 
 func AddInit(fi func(), ff func(), pos int) {
+	var (
+		f     fn
+		index int
+	)
+
 	lock.Lock()
 	defer lock.Unlock()
 
 	s := fn{fi, ff, pos}
 
-	var (
-		f     fn
-		index int
-	)
-	for index, f = range fns {
+	for index = 0; index < len(fns); index++ {
+		f = fns[index]
 		if f.pos < pos {
 			break
 		}
 	}
+
 	fns = append(fns[0:index], append([]fn{s}, fns[index:]...)...)
 }
 
