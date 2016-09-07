@@ -44,6 +44,7 @@ func FiniAll() {
 	}
 }
 
+// pos越大, 优先级越高
 func AddInit(fi func(), ff func(), pos int) {
 	var (
 		f     fn
@@ -66,7 +67,6 @@ func AddInit(fi func(), ff func(), pos int) {
 }
 
 // routines
-
 func AddRoutine(f gr) {
 	routines = append(routines, f)
 }
